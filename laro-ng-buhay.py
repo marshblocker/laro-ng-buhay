@@ -7,8 +7,8 @@ SCREEN_REFRESH_RATE = 10000
 
 def will_live(rc: tuple[int, int], board: list[list[bool]]) -> bool:
 	r, c = rc
-		
 	alive_neighbors = 0
+	
 	if r != 0:
 		for i in range(3):
 			try:
@@ -35,7 +35,7 @@ def will_live(rc: tuple[int, int], board: list[list[bool]]) -> bool:
 
 def next_state(board: list[list[bool]]) -> list[list[bool]]:
 	new_board: list[list[bool]] = [[False for _ in range(BOARD_WIDTH)]
-								   for _ in range(BOARD_HEIGHT)]
+					for _ in range(BOARD_HEIGHT)]
 
 	for r in range(BOARD_HEIGHT):
 		for c in range(BOARD_WIDTH):

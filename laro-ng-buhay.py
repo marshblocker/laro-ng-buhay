@@ -1,104 +1,84 @@
-from os import system
-from time import sleep
-from typing import NewType, TypedDict
-import random
+import os
+import time
+from random import choice
 
-GRID_CHAR = '*'
-BOARD_WIDTH = 80
-BOARD_HEIGHT = 40
+CELL_CHAR = '*'
+BOARD_WIDTH = 100
+BOARD_HEIGHT = 15
 
+def will_live(rc: tuple[int, int], board: list[list[bool]]) -> bool:
+	r, c = rc	
+	alive_neighbors = 0
 
-class Walker(TypedDict):
-	pos: list[int]
-	free: bool
+	if r != 0:
+		for i in range(3):
+			try:
+				alive_neighbors += board[r-1][c-1+i]
+			except IndexError:
+				pass 
+	if c != 0:
+		alive_neighbors += board[r][c-1]
+	if c != BOARD_WIDTH-1:
+		alive_neighbors += board[r][c+1]
+	if r != BOARD_HEIGHT-1:
+		for i in range(3):
+			try:
+				alive_neighbors += board[r+1][c-1+i]
+			except IndexError:
+				pass 
 
-
-Traversed = bool
-BoardType = NewType("BoardType", list[list[Traversed]])
-WalkersType = NewType("WalkersType", list[Walker])
-
-
-def populate_board(board: BoardType, n: int) -> WalkersType:
-	walkers = WalkersType([{"pos": [0, 0], "free": True} for _ in range(n)])
-
-	for i in range(n):
-		while True:
-			r: int = random.randint(0, BOARD_HEIGHT-1)
-			c: int = random.randint(0, BOARD_WIDTH-1)
-			if not board[r][c]:
-				walkers[i]["pos"] = [r, c]
-				board[r][c] = True
-				break 
-
-	return walkers
+	return alive_neighbors == 3 or \
+		   alive_neighbors == 2 and board[r][c]
 
 
-def check_and_update_board(direction: int, old_pos: list[int], 
-			   board: BoardType) -> tuple[bool, list[int]]:
-	occupied: bool = True  
-	r, c  = old_pos
-	match direction:
-		case 0:	# UP
-			r += 1
-		case 1: # RIGHT
-			c += 1
-		case 2: # DOWN
-			r -= 1
-		case 3: # LEFT
-			c -= 1
+def next_state(curr_board: list[list[bool]]) -> list[list[bool]]:
+	new_board: list[list[bool]] = [[False for _ in range(BOARD_WIDTH)]
+								   for _ in range(BOARD_HEIGHT)]
 
-	if 0 < r < BOARD_HEIGHT and 0 < c < BOARD_WIDTH:
-		occupied = board[r][c]
-		if not occupied:
-			board[r][c] = True
+	for r in range(BOARD_HEIGHT):
+		for c in range(BOARD_WIDTH):
+			new_board[r][c] = will_live((r,c), curr_board)
 
-	return (occupied, [r, c])
+	return new_board
+
+
+def board_init() -> list[list[bool]]:
+	yesno: list[bool] = [True, False]
+	starting_board: list[list[bool]] = \
+		[[choice(yesno) for _ in range(BOARD_WIDTH)] 
+			for _ in range(BOARD_HEIGHT)]
+
+	return starting_board
 
 
 def clear_screen() -> None:
-	system('cls')
+	os.system('cls')
 
 
-def print_board(board: BoardType, clear: bool = True) -> None:
-	board_str = "\n".join(["".join([GRID_CHAR if e else " " for e in row]) 
-			       for row in board])
+def print_board(board: list[list[bool]], gen: int) -> None:
+	print(f"Generation: {gen}")
+	board_str: str = \
+		"\n".join(["".join([CELL_CHAR if elem else " " for elem in row]) 
+						for row in board])
 	print(board_str)
-	if clear:
-		sleep(0.001)
-		clear_screen()
 
+	time.sleep(0.05)
+	clear_screen()
+	
 
-def main():
-	n = int(input("n: "))
-	board = BoardType([[False for _ in range(BOARD_WIDTH)] 
-			   	for _ in range(BOARD_HEIGHT)])
-	walkers: WalkersType = populate_board(board, n)
+def main() -> None:
+	gen: int = 0
+	board: list[list[bool]] = board_init()
 
-	stuck_count = 0
-	while stuck_count != n:
-		print_board(board)
-		for i in range(len(walkers)):
-			available: list[int] = [0, 1, 2, 3]
-
-			if walkers[i]["free"]:
-				while len(available):
-					direction: int = random.choice(available)
-					occupied, new_pos = \
-						check_and_update_board(direction, 
-								       walkers[i]["pos"], board)	
-
-					if occupied:
-						available.remove(direction)
-					else:
-						walkers[i]["pos"] = new_pos
-						break
-
-				if not len(available):
-					walkers[i]["free"] = False 
-					stuck_count += 1
-
-	print_board(board, clear= False)
+	clear_screen()
+	while True:
+		print_board(board, gen)
+		board = next_state(board)
+		gen += 1
 
 
 if __name__ == "__main__":
 	main()
+
+
+

@@ -35,7 +35,7 @@ def will_live(rc: tuple[int, int], board: BoardType) -> bool:
         alive_neighbors == 2 and board[r][c]
 
 
-def next_state(curr_board: BoardType) -> BoardType:
+def next_board_state(curr_board: BoardType) -> BoardType:
     new_board = BoardType([[False for _ in range(BOARD_WIDTH)]
                                  for _ in range(BOARD_HEIGHT)])
 
@@ -76,7 +76,7 @@ def main() -> None:
     clear_screen()
     while True:
         print_board(board, gen)
-        board = next_state(board)
+        board = next_board_state(board)
         gen += 1
 
 

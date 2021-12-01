@@ -1,13 +1,16 @@
 import os
 import time
 from random import choice
+from typing import NewType
 
 CELL_CHAR = '*'
 BOARD_WIDTH = 100
 BOARD_HEIGHT = 15
 
+BoardType = NewType('BoardType', list[list[bool]])
 
-def will_live(rc: tuple[int, int], board: list[list[bool]]) -> bool:
+
+def will_live(rc: tuple[int, int], board: BoardType) -> bool:
     r, c = rc
     alive_neighbors = 0
 
@@ -32,9 +35,9 @@ def will_live(rc: tuple[int, int], board: list[list[bool]]) -> bool:
         alive_neighbors == 2 and board[r][c]
 
 
-def next_state(curr_board: list[list[bool]]) -> list[list[bool]]:
-    new_board: list[list[bool]] = [[False for _ in range(BOARD_WIDTH)]
-                                   for _ in range(BOARD_HEIGHT)]
+def next_state(curr_board: BoardType) -> BoardType:
+    new_board = BoardType([[False for _ in range(BOARD_WIDTH)]
+                                 for _ in range(BOARD_HEIGHT)])
 
     for r in range(BOARD_HEIGHT):
         for c in range(BOARD_WIDTH):
@@ -43,11 +46,10 @@ def next_state(curr_board: list[list[bool]]) -> list[list[bool]]:
     return new_board
 
 
-def board_init() -> list[list[bool]]:
+def board_init() -> BoardType:
     yesno: list[bool] = [True, False]
-    starting_board: list[list[bool]] = \
-        [[choice(yesno) for _ in range(BOARD_WIDTH)]
-         for _ in range(BOARD_HEIGHT)]
+    starting_board = BoardType([[choice(yesno) for _ in range(BOARD_WIDTH)]
+                                              for _ in range(BOARD_HEIGHT)])
 
     return starting_board
 
@@ -56,7 +58,7 @@ def clear_screen() -> None:
     os.system('cls')
 
 
-def print_board(board: list[list[bool]], gen: int) -> None:
+def print_board(board: BoardType, gen: int) -> None:
     print(f"Generation: {gen}")
     board_str: str = \
         "\n".join(["".join([CELL_CHAR if elem else " " for elem in row])
@@ -69,7 +71,7 @@ def print_board(board: list[list[bool]], gen: int) -> None:
 
 def main() -> None:
     gen: int = 0
-    board: list[list[bool]] = board_init()
+    board = BoardType(board_init())
 
     clear_screen()
     while True:
